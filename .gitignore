@@ -1,0 +1,15 @@
+# Excel Files (heavy datasets)
+*.xlsx
+
+# Python caches & virtual environments
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# System / IDE configuration files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

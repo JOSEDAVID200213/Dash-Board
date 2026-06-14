@@ -1,0 +1,70 @@
+{
+  "total_products": 159776,
+  "active_counts": {
+    "Yes": 152893,
+    "No": 6883
+  },
+  "brand_counts": {
+    "ARTURO CALLE": 113394,
+    "Arturo Calle KIDS": 19679,
+    "COLORE": 14723,
+    "FREEDOM": 9312,
+    "MARAVELA": 2668
+  },
+  "dept_counts": {
+    "HOMBRE": 100644,
+    "MUJER": 22952,
+    "KIDS": 20370,
+    "COLORE": 14667,
+    "VIAJE": 1039,
+    "MARAVELA": 38,
+    "FREEDOM": 36,
+    "Bono de Regalo": 30
+  },
+  "category_counts": {
+    "Camisetas": 23673,
+    "Polos": 15954,
+    "Camisas Casuales": 11265,
+    "Jeans": 9719,
+    "Camisas Formales": 6194,
+    "Bermudas": 5815,
+    "Bóxers": 5735,
+    "Pantalones Casuales": 5115,
+    "Correas": 4303,
+    "Suéteres y Cardigans": 3976,
+    "Tenis": 3895,
+    "Trajes": 3884,
+    "Pantalones": 3726,
+    "Camisas Business": 3482,
+    "Chaquetas": 3390,
+    "Blusas y Camisas": 3306,
+    "Buzos": 3115,
+    "Pantalonetas": 2848,
+    "Pijamas": 2538,
+    "Medias": 2376,
+    "Blazers": 2297,
+    "Pantalones Business": 1980,
+    "Sandalias": 1970,
+    "Zapatos Formales": 1891,
+    "Zapatos Casual": 1668,
+    "Corbatas y Corbatines": 1480,
+    "Pantalones Formales": 1414,
+    "Camisas": 1396,
+    "Botas": 1344,
+    "Camisas Lino": 1138
+  },
+  "seo_stats": {
+    "total": 159776,
+    "has_meta_desc": 159733,
+    "has_page_title": 159776,
+    "has_url": 159776
+  },
+  "physical_stats": {
+    "avg_package_weight": 9.80706202666333,
+    "avg_package_width": 1.7784552794642297,
+    "avg_package_height": 1.0488577329911748,
+    "avg_package_length": 1.9484314952744572,
+    "avg_actual_weight": 0.8777794279894764,
+    "avg_cubic_weight": 0.055468074732427874
+  }
+}

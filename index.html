@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arturo Calle - E-Commerce & Catalog Dashboard</title>
+  <!-- Google Fonts: Outfit (headings) and Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons for premium visual feel -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body class="dark-theme">
+  <!-- Background glow effects for premium look -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="logo-container">
+          <span class="logo-badge">AC</span>
+          <div class="logo-text">
+            <h2>Arturo Calle</h2>
+            <span class="logo-subtitle">BI Dashboard</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-tab="tab-sales">
+          <i data-lucide="trending-up"></i>
+          <span>Ventas E-Commerce</span>
+        </button>
+        <button class="nav-btn" data-tab="tab-catalog">
+          <i data-lucide="package"></i>
+          <span>Catálogo de Productos</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="theme-toggle" id="themeToggleBtn">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon"></i>
+          <span>Alternar Tema</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-content">
+      <!-- Top Bar / Header -->
+      <header class="content-header">
+        <div class="header-info">
+          <h1 id="pageTitle">Ventas E-Commerce</h1>
+          <p class="text-secondary" id="pageSubtitle">Análisis mensual de ventas, presupuestos y EBITDA de la tienda online.</p>
+        </div>
+
+        <!-- E-Commerce Dynamic Filters -->
+        <div class="header-filters" id="salesFilters">
+          <div class="filter-group">
+            <label for="filterMonth"><i data-lucide="calendar"></i> Mes</label>
+            <select id="filterMonth">
+              <option value="ALL">Todos los Meses</option>
+              <option value="ENERO">Enero</option>
+              <option value="FEBRERO">Febrero</option>
+              <option value="MARZO">Marzo</option>
+              <!-- Filled dynamically if needed, or pre-filled for simplicity -->
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filterBrand"><i data-lucide="award"></i> Marca</label>
+            <select id="filterBrand">
+              <option value="ALL">Todas las Marcas</option>
+              <!-- Filled dynamically by script -->
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filterGender"><i data-lucide="users"></i> Género</label>
+            <select id="filterGender">
+              <option value="ALL">Todos los Géneros</option>
+              <!-- Filled dynamically by script -->
+            </select>
+          </div>
+
+          <button class="btn-icon reset-filters" id="resetBtn" title="Resetear Filtros">
+            <i data-lucide="rotate-ccw"></i>
+          </button>
+        </div>
+
+        <!-- Catalog Specific Filters (Hidden initially) -->
+        <div class="header-filters hidden" id="catalogFilters">
+          <div class="filter-group">
+            <label for="catFilterBrand"><i data-lucide="award"></i> Marca</label>
+            <select id="catFilterBrand">
+              <option value="ALL">Todas las Marcas</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="catFilterDept"><i data-lucide="layers"></i> Depto</label>
+            <select id="catFilterDept">
+              <option value="ALL">Todos los Deptos</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="catFilterActive"><i data-lucide="check-circle-2"></i> Estado</label>
+            <select id="catFilterActive">
+              <option value="ALL">Todos</option>
+              <option value="Yes">Activo</option>
+              <option value="No">Inactivo</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB 1: SALES DASHBOARD -->
+      <section id="tab-sales" class="tab-pane active">
+        <!-- KPI Cards Grid -->
+        <div class="kpi-grid">
+          <!-- KPI 1: Sales -->
+          <div class="kpi-card" id="kpiSales">
+            <div class="kpi-header">
+              <span class="kpi-title">Ventas Totales Actuales</span>
+              <div class="kpi-icon"><i data-lucide="dollar-sign"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiSalesVal">$0</div>
+            <div class="kpi-footer">
+              <span class="kpi-badge" id="kpiSalesTrend">0%</span>
+              <span class="kpi-subtext">vs. Año Anterior</span>
+            </div>
+          </div>
+
+          <!-- KPI 2: Units -->
+          <div class="kpi-card" id="kpiUnits">
+            <div class="kpi-header">
+              <span class="kpi-title">Unidades Vendidas</span>
+              <div class="kpi-icon"><i data-lucide="shopping-bag"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiUnitsVal">0</div>
+            <div class="kpi-footer">
+              <span class="kpi-badge" id="kpiUnitsTrend">0%</span>
+              <span class="kpi-subtext">vs. Año Anterior</span>
+            </div>
+          </div>
+
+          <!-- KPI 3: Budget Achievement -->
+          <div class="kpi-card" id="kpiBudget">
+            <div class="kpi-header">
+              <span class="kpi-title">Logro de Presupuesto</span>
+              <div class="kpi-icon"><i data-lucide="target"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiBudgetVal">0%</div>
+            <div class="kpi-footer">
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="kpiBudgetBar" style="width: 0%"></div>
+              </div>
+              <span class="kpi-subtext" id="kpiBudgetText">Presupuesto: $0</span>
+            </div>
+          </div>
+
+          <!-- KPI 4: EBITDA -->
+          <div class="kpi-card" id="kpiEbitda">
+            <div class="kpi-header">
+              <span class="kpi-title">Utilidad EBITDA</span>
+              <div class="kpi-icon"><i data-lucide="pie-chart"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiEbitdaVal">$0</div>
+            <div class="kpi-footer">
+              <span class="kpi-badge neutral" id="kpiEbitdaMargin">0%</span>
+              <span class="kpi-subtext">Margen EBITDA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Executive Insights Card -->
+        <div class="grid-card col-span-3 insights-card" id="executiveInsights" style="margin-bottom: 32px; border-left: 4px solid var(--accent-color);">
+          <div class="card-header" style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+            <div style="background: var(--accent-gradient); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+              <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 1.1rem;">Resumen Ejecutivo & Insights del Negocio</h3>
+              <p class="text-secondary" style="margin: 0; font-size: 0.8rem;">Análisis y conclusiones concretas de rendimiento según los filtros activos.</p>
+            </div>
+          </div>
+          <div class="insights-body" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary);">
+            <div class="insight-item">
+              <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;"><i data-lucide="trending-up" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px; color: var(--primary-color);"></i> Comportamiento Comercial</strong>
+              <span id="insightSalesPerformance">Cargando análisis comercial...</span>
+            </div>
+            <div class="insight-item">
+              <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;"><i data-lucide="award" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px; color: var(--secondary-color);"></i> Participación de Marcas</strong>
+              <span id="insightBrandParticipation">Cargando participación...</span>
+            </div>
+            <div class="insight-item">
+              <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;"><i data-lucide="target" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px; color: var(--warning-color);"></i> Cumplimiento & Eficiencia</strong>
+              <span id="insightEfficiency">Cargando eficiencia...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="dashboard-grid">
+          <!-- Main multi-year chart -->
+          <div class="grid-card col-span-2 chart-card">
+            <div class="card-header">
+              <h3>Histórico de Ventas Mensual y Comparativa Anual (2021 - 2026)</h3>
+              <p class="text-secondary">Ventas mensuales registradas en millones de pesos.</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="monthlyTrendChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Gender sales -->
+          <div class="grid-card chart-card">
+            <div class="card-header">
+              <h3>Distribución de Ventas por Género</h3>
+              <p class="text-secondary">Comparativa de unidades vendidas.</p>
+            </div>
+            <div class="chart-container-donut">
+              <canvas id="genderSalesChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Brand sales -->
+          <div class="grid-card chart-card col-span-1">
+            <div class="card-header">
+              <h3>Ventas y Presupuesto por Marca</h3>
+              <p class="text-secondary">Comparativa de pesos reales vs presupuesto.</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="brandSalesChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Product ranking -->
+          <div class="grid-card col-span-2 table-card">
+            <div class="card-header">
+              <h3>Rendimiento de Líneas de Producto E-Commerce</h3>
+              <p class="text-secondary">Detalle de ventas actuales, anteriores y cumplimiento del presupuesto por producto.</p>
+            </div>
+            <div class="table-container">
+              <table id="productSalesTable">
+                <thead>
+                  <tr>
+                    <th>Línea de Producto</th>
+                    <th>Marca</th>
+                    <th>Género</th>
+                    <th class="text-right">U. Actuales</th>
+                    <th class="text-right">Ventas Actuales</th>
+                    <th class="text-right">U. Anteriores</th>
+                    <th class="text-right">Cumplimiento Presupuesto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Filled dynamically by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: PRODUCT CATALOG EXPLORER -->
+      <section id="tab-catalog" class="tab-pane">
+        <!-- Catalog KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Total SKUs y Productos</span>
+              <div class="kpi-icon"><i data-lucide="database"></i></div>
+            </div>
+            <div class="kpi-value" id="catTotalVal">0</div>
+            <div class="kpi-footer">
+              <span class="kpi-subtext">Registrados en la base de datos maestro</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Productos Activos</span>
+              <div class="kpi-icon"><i data-lucide="activity"></i></div>
+            </div>
+            <div class="kpi-value" id="catActiveVal">0</div>
+            <div class="kpi-footer">
+              <span class="kpi-badge positive" id="catActivePct">0%</span>
+              <span class="kpi-subtext">Tasa de activación</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Complejidad Física</span>
+              <div class="kpi-icon"><i data-lucide="box"></i></div>
+            </div>
+            <div class="kpi-value" id="catAvgWeight">0 kg</div>
+            <div class="kpi-footer">
+              <span class="kpi-subtext" id="catAvgVol">Peso y volumen promedio de empaque</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Salud SEO y Metadatos</span>
+              <div class="kpi-icon"><i data-lucide="search"></i></div>
+            </div>
+            <div class="kpi-value" id="catSeoVal">0%</div>
+            <div class="kpi-footer">
+              <span class="kpi-subtext">Productos con meta description</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Catalog breakdown charts -->
+          <div class="grid-card chart-card">
+            <div class="card-header">
+              <h3>Distribución por Departamentos</h3>
+              <p class="text-secondary">Volumen de productos en el catálogo maestro.</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="catDeptChart"></canvas>
+            </div>
+          </div>
+
+          <div class="grid-card chart-card">
+            <div class="card-header">
+              <h3>Top Categorías de Producto</h3>
+              <p class="text-secondary">Las 10 categorías con más SKUs creados.</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="catCategoryChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Catalog Explorer Table -->
+          <div class="grid-card col-span-2 table-card">
+            <div class="card-header table-actions-header">
+              <div>
+                <h3>Explorador e Índice del Catálogo</h3>
+                <p class="text-secondary">Búsqueda rápida en tiempo real en los productos activos del catálogo.</p>
+              </div>
+              <div class="search-container">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="catalogSearchInput" placeholder="Buscar por ID, Nombre, Marca o Categoría...">
+              </div>
+            </div>
+            <div class="table-container">
+              <table id="catalogTable">
+                <thead>
+                  <tr>
+                    <th>Product ID</th>
+                    <th>Nombre del Producto</th>
+                    <th>Marca</th>
+                    <th>Departamento</th>
+                    <th>Categoría</th>
+                    <th>SKU ID</th>
+                    <th>Nombre SKU</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Filled dynamically by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+            <!-- Pagination -->
+            <div class="table-pagination">
+              <span class="pagination-info" id="paginationInfo">Mostrando 0-0 de 0 productos</span>
+              <div class="pagination-controls">
+                <button class="btn btn-sm btn-outline" id="prevPageBtn" disabled><i data-lucide="chevron-left"></i> Anterior</button>
+                <button class="btn btn-sm btn-outline" id="nextPageBtn" disabled>Siguiente <i data-lucide="chevron-right"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
