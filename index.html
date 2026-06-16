@@ -131,6 +131,13 @@
               <option value="No">Inactivo</option>
             </select>
           </div>
+          <div class="filter-group">
+            <label for="catFilterGroupBy"><i data-lucide="layout-grid"></i> Vista</label>
+            <select id="catFilterGroupBy">
+              <option value="PRODUCT">Agrupar por Producto</option>
+              <option value="SKU">Lista de SKUs</option>
+            </select>
+          </div>
         </div>
       </header>
 
@@ -312,24 +319,23 @@
 
           <div class="kpi-card">
             <div class="kpi-header">
-              <span class="kpi-title">Categoría Principal</span>
-              <div class="kpi-icon"><i data-lucide="star"></i></div>
+              <span class="kpi-title">Profundidad Promedio</span>
+              <div class="kpi-icon"><i data-lucide="layers"></i></div>
             </div>
-            <div class="kpi-value" id="catTopCategory" style="font-size: 1.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Categoría Principal">N/A</div>
+            <div class="kpi-value" id="catAvgSkus">0.0</div>
             <div class="kpi-footer">
-              <span class="kpi-badge neutral" id="catTopCategoryPct">0%</span>
-              <span class="kpi-subtext">de los SKUs filtrados</span>
+              <span class="kpi-subtext">SKUs por Producto Padre</span>
             </div>
           </div>
 
-          <div class="kpi-card">
+          <div class="kpi-card" style="border-left: 4px solid #ef4444;">
             <div class="kpi-header">
-              <span class="kpi-title">Salud de Descripciones</span>
-              <div class="kpi-icon"><i data-lucide="file-text"></i></div>
+              <span class="kpi-title">Alerta: Surtido Bajo</span>
+              <div class="kpi-icon"><i data-lucide="alert-triangle" style="color: #ef4444;"></i></div>
             </div>
-            <div class="kpi-value" id="catDescVal">0%</div>
+            <div class="kpi-value" id="catLowAssortment" style="color: #ef4444;">0</div>
             <div class="kpi-footer">
-              <span class="kpi-subtext">SKUs con descripción válida</span>
+              <span class="kpi-subtext" id="catLowAssortmentPct">≤ 2 SKUs por Producto</span>
             </div>
           </div>
         </div>
@@ -372,15 +378,15 @@
               <table id="catalogTable">
                 <thead>
                   <tr>
-                    <th>Product ID</th>
-                    <th>Nombre del Producto</th>
-                    <th>Marca</th>
-                    <th>Departamento</th>
-                    <th>Categoría</th>
-                    <th>SKU ID</th>
-                    <th>Nombre SKU</th>
-                    <th>Acción</th>
-                  </tr>
+                  <th>ID Producto</th>
+                  <th>Nombre del Producto</th>
+                  <th>Marca</th>
+                  <th>Departamento</th>
+                  <th>Categoría</th>
+                  <th>SKU ID</th>
+                  <th>Nombre SKU</th>
+                  <th>Acción / Variaciones</th>
+                </tr>
                 </thead>
                 <tbody>
                   <!-- Filled dynamically by JavaScript -->

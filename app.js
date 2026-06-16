@@ -18,6 +18,7 @@ let catalogFilters = {
   dept: 'ALL',
   category: 'ALL',
   active: 'ALL',
+  groupBy: 'PRODUCT',
   search: ''
 };
 
@@ -169,6 +170,7 @@ function initializeUI() {
   const catFilterDept = document.getElementById('catFilterDept');
   const catFilterCategory = document.getElementById('catFilterCategory');
   const catFilterActive = document.getElementById('catFilterActive');
+  const catFilterGroupBy = document.getElementById('catFilterGroupBy');
   const catalogSearchInput = document.getElementById('catalogSearchInput');
 
   if (rawCatalogStats) {
@@ -214,6 +216,11 @@ function initializeUI() {
   });
   catFilterActive.addEventListener('change', (e) => {
     catalogFilters.active = e.target.value;
+    catalogPagination.currentPage = 1;
+    updateCatalogView();
+  });
+  catFilterGroupBy.addEventListener('change', (e) => {
+    catalogFilters.groupBy = e.target.value;
     catalogPagination.currentPage = 1;
     updateCatalogView();
   });
@@ -672,9 +679,9 @@ function updateCatalogView() {
     document.getElementById('catUniqueProds').innerText = "0 Productos Únicos";
     document.getElementById('catActiveVal').innerText = "0";
     document.getElementById('catActivePct').innerText = "0%";
-    document.getElementById('catTopCategory').innerText = "N/A";
-    document.getElementById('catTopCategoryPct').innerText = "0%";
-    document.getElementById('catDescVal').innerText = "0%";
+    document.getElementById('catAvgSkus').innerText = "0.0";
+    document.getElementById('catLowAssortment').innerText = "0";
+    document.getElementById('catLowAssortmentPct').innerText = "0% de los Productos";
   } else {
     // Total SKUs
     document.getElementById('catTotalVal').innerText = formatNumber(filtered.length);
@@ -689,24 +696,20 @@ function updateCatalogView() {
     document.getElementById('catActiveVal').innerText = formatNumber(activeCount);
     document.getElementById('catActivePct').innerText = activePct.toFixed(1) + '%';
 
-    // Top Category
-    const catAgg = {};
+    // Assortment logic
+    const skusByProduct = {};
     filtered.forEach(p => {
-      const c = p.Category || 'Desconocido';
-      catAgg[c] = (catAgg[c] || 0) + 1;
+      skusByProduct[p.ProductID] = (skusByProduct[p.ProductID] || 0) + 1;
     });
-    const sortedCats = Object.entries(catAgg).sort((a, b) => b[1] - a[1]);
-    const topCat = sortedCats.length > 0 ? sortedCats[0][0] : 'N/A';
-    const topCatPct = sortedCats.length > 0 ? (sortedCats[0][1] / filtered.length) * 100 : 0;
-    
-    document.getElementById('catTopCategory').innerText = topCat;
-    document.getElementById('catTopCategory').title = topCat;
-    document.getElementById('catTopCategoryPct').innerText = topCatPct.toFixed(1) + '%';
 
-    // Description Health
-    const validDescCount = filtered.filter(p => p.Description && p.Description.trim() !== '' && p.Description.toLowerCase() !== 'null').length;
-    const descPct = (validDescCount / filtered.length) * 100;
-    document.getElementById('catDescVal').innerText = descPct.toFixed(1) + '%';
+    const avgSkus = filtered.length / uniqueProds;
+    document.getElementById('catAvgSkus').innerText = avgSkus.toFixed(1);
+
+    const lowAssortmentCount = Object.values(skusByProduct).filter(count => count <= 2).length;
+    const lowAssortmentPct = (lowAssortmentCount / uniqueProds) * 100;
+    
+    document.getElementById('catLowAssortment').innerText = formatNumber(lowAssortmentCount);
+    document.getElementById('catLowAssortmentPct').innerText = `${lowAssortmentPct.toFixed(1)}% de los Productos`;
   }
 
   updateCatalogCharts(filtered);
@@ -793,10 +796,24 @@ function updateCatalogCharts(filtered = null) {
 function updateCatalogTable(filtered = null) {
   if (!filtered) filtered = getFilteredCatalog();
 
+  let displayData = filtered;
+
+  if (catalogFilters.groupBy === 'PRODUCT') {
+    const groupedMap = new Map();
+    filtered.forEach(p => {
+      if (!groupedMap.has(p.ProductID)) {
+        groupedMap.set(p.ProductID, { ...p, skuCount: 1 });
+      } else {
+        groupedMap.get(p.ProductID).skuCount += 1;
+      }
+    });
+    displayData = Array.from(groupedMap.values());
+  }
+
   const tableBody = document.querySelector('#catalogTable tbody');
   tableBody.innerHTML = '';
 
-  const totalItems = filtered.length;
+  const totalItems = displayData.length;
   const totalPages = Math.ceil(totalItems / catalogPagination.pageSize);
   
   if (catalogPagination.currentPage > totalPages) {
@@ -806,39 +823,50 @@ function updateCatalogTable(filtered = null) {
   const startIdx = (catalogPagination.currentPage - 1) * catalogPagination.pageSize;
   const endIdx = Math.min(startIdx + catalogPagination.pageSize, totalItems);
 
-  const pageSlice = filtered.slice(startIdx, endIdx);
+  const pageSlice = displayData.slice(startIdx, endIdx);
 
   if (pageSlice.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="8" class="text-secondary" style="text-align: center; padding: 40px 0;">No se encontraron productos con los filtros seleccionados.</td></tr>`;
   } else {
     pageSlice.forEach(prod => {
       const row = document.createElement('tr');
-      const activeClass = prod.Activeproduct === 'Yes' ? 'active' : 'inactive';
-      const activeLabel = prod.Activeproduct === 'Yes' ? 'Activo' : 'Inactivo';
 
-      row.innerHTML = `
-        <td class="product-id-link">${prod.ProductID}</td>
-        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${prod.ProductName}">${prod.ProductName}</td>
-        <td>${prod.Brand}</td>
-        <td>${prod.Department}</td>
-        <td>${prod.Category}</td>
-        <td style="font-family: monospace;">${prod.SKUID || 'N/A'}</td>
-        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${prod.SKUname}">${prod.SKUname || 'N/A'}</td>
-        <td>
-          ${prod.ProductURL ? `
-            <a href="${prod.ProductURL}" target="_blank" class="btn-action" title="Ver en Tienda">
-              <i data-lucide="external-link"></i>
-            </a>
-          ` : '<span class="text-secondary">—</span>'}
-        </td>
-      `;
+      if (catalogFilters.groupBy === 'PRODUCT') {
+        row.innerHTML = `
+          <td class="product-id-link">${prod.ProductID}</td>
+          <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${prod.ProductName}">${prod.ProductName}</td>
+          <td>${prod.Brand}</td>
+          <td>${prod.Department}</td>
+          <td>${prod.Category}</td>
+          <td class="text-secondary">—</td>
+          <td class="text-secondary">—</td>
+          <td><span class="kpi-badge neutral">${prod.skuCount} SKUs</span></td>
+        `;
+      } else {
+        row.innerHTML = `
+          <td class="product-id-link">${prod.ProductID}</td>
+          <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${prod.ProductName}">${prod.ProductName}</td>
+          <td>${prod.Brand}</td>
+          <td>${prod.Department}</td>
+          <td>${prod.Category}</td>
+          <td style="font-family: monospace;">${prod.SKUID || 'N/A'}</td>
+          <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${prod.SKUname}">${prod.SKUname || 'N/A'}</td>
+          <td>
+            ${prod.ProductURL ? `
+              <a href="${prod.ProductURL}" target="_blank" class="btn-action" title="Ver en Tienda">
+                <i data-lucide="external-link"></i>
+              </a>
+            ` : '<span class="text-secondary">—</span>'}
+          </td>
+        `;
+      }
       tableBody.appendChild(row);
     });
   }
 
   document.getElementById('paginationInfo').innerText = totalItems > 0 
-    ? `Mostrando ${startIdx + 1}-${endIdx} de ${formatNumber(totalItems)} productos` 
-    : 'Mostrando 0-0 de 0 productos';
+    ? `Mostrando ${startIdx + 1}-${endIdx} de ${formatNumber(totalItems)} ${catalogFilters.groupBy === 'PRODUCT' ? 'productos' : 'SKUs'}` 
+    : 'Mostrando 0-0 de 0 ítems';
 
   const prevBtn = document.getElementById('prevPageBtn');
   const nextBtn = document.getElementById('nextPageBtn');
