@@ -9,12 +9,14 @@ let rawCatalogSample = [];
 let salesFilters = {
   month: 'ALL',
   brand: 'ALL',
-  gender: 'ALL'
+  gender: 'ALL',
+  producto: 'ALL'
 };
 
 let catalogFilters = {
   brand: 'ALL',
   dept: 'ALL',
+  category: 'ALL',
   active: 'ALL',
   search: ''
 };
@@ -109,6 +111,7 @@ function initializeUI() {
   const filterMonth = document.getElementById('filterMonth');
   const filterBrand = document.getElementById('filterBrand');
   const filterGender = document.getElementById('filterGender');
+  const filterProduct = document.getElementById('filterProduct');
 
   const salesBrands = [...new Set(rawSalesProducts.map(p => p.Marca).filter(Boolean))].sort();
   salesBrands.forEach(b => {
@@ -126,6 +129,14 @@ function initializeUI() {
     filterGender.appendChild(opt);
   });
 
+  const salesProducts = [...new Set(rawSalesProducts.map(p => p.Producto).filter(Boolean))].sort();
+  salesProducts.forEach(prod => {
+    const opt = document.createElement('option');
+    opt.value = prod;
+    opt.innerText = prod;
+    filterProduct.appendChild(opt);
+  });
+
   // Filter Listeners
   filterMonth.addEventListener('change', (e) => {
     salesFilters.month = e.target.value;
@@ -139,18 +150,24 @@ function initializeUI() {
     salesFilters.gender = e.target.value;
     updateSalesView();
   });
+  filterProduct.addEventListener('change', (e) => {
+    salesFilters.producto = e.target.value;
+    updateSalesView();
+  });
 
   document.getElementById('resetBtn').addEventListener('click', () => {
     filterMonth.value = 'ALL';
     filterBrand.value = 'ALL';
     filterGender.value = 'ALL';
-    salesFilters = { month: 'ALL', brand: 'ALL', gender: 'ALL' };
+    filterProduct.value = 'ALL';
+    salesFilters = { month: 'ALL', brand: 'ALL', gender: 'ALL', producto: 'ALL' };
     updateSalesView();
   });
 
   // Populate Catalog Filters
   const catFilterBrand = document.getElementById('catFilterBrand');
   const catFilterDept = document.getElementById('catFilterDept');
+  const catFilterCategory = document.getElementById('catFilterCategory');
   const catFilterActive = document.getElementById('catFilterActive');
   const catalogSearchInput = document.getElementById('catalogSearchInput');
 
@@ -170,25 +187,40 @@ function initializeUI() {
     });
   }
 
+  if (rawCatalogSample) {
+    const catalogCats = [...new Set(rawCatalogSample.map(p => p.Category).filter(Boolean))].sort();
+    catalogCats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.innerText = c;
+      catFilterCategory.appendChild(opt);
+    });
+  }
+
   catFilterBrand.addEventListener('change', (e) => {
     catalogFilters.brand = e.target.value;
     catalogPagination.currentPage = 1;
-    updateCatalogTable();
+    updateCatalogView();
   });
   catFilterDept.addEventListener('change', (e) => {
     catalogFilters.dept = e.target.value;
     catalogPagination.currentPage = 1;
-    updateCatalogTable();
+    updateCatalogView();
+  });
+  catFilterCategory.addEventListener('change', (e) => {
+    catalogFilters.category = e.target.value;
+    catalogPagination.currentPage = 1;
+    updateCatalogView();
   });
   catFilterActive.addEventListener('change', (e) => {
     catalogFilters.active = e.target.value;
     catalogPagination.currentPage = 1;
-    updateCatalogTable();
+    updateCatalogView();
   });
   catalogSearchInput.addEventListener('input', (e) => {
     catalogFilters.search = e.target.value.toLowerCase();
     catalogPagination.currentPage = 1;
-    updateCatalogTable();
+    updateCatalogView();
   });
 
   document.getElementById('prevPageBtn').addEventListener('click', () => {
@@ -234,6 +266,9 @@ function updateExecutiveInsights() {
   }
   if (salesFilters.gender !== 'ALL') {
     filteredProds = filteredProds.filter(p => p.Genero === salesFilters.gender);
+  }
+  if (salesFilters.producto !== 'ALL') {
+    filteredProds = filteredProds.filter(p => p.Producto === salesFilters.producto);
   }
 
   const totalActualSales = filteredProds.reduce((sum, p) => sum + (p.PesosActuales || 0), 0);
@@ -301,6 +336,9 @@ function updateSalesKPIs() {
   }
   if (salesFilters.gender !== 'ALL') {
     filteredProds = filteredProds.filter(p => p.Genero === salesFilters.gender);
+  }
+  if (salesFilters.producto !== 'ALL') {
+    filteredProds = filteredProds.filter(p => p.Producto === salesFilters.producto);
   }
 
   // Use Cleaned spaceless properties
@@ -447,6 +485,9 @@ function updateSalesCharts() {
   if (salesFilters.gender !== 'ALL') {
     filteredProds = filteredProds.filter(p => p.Genero === salesFilters.gender);
   }
+  if (salesFilters.producto !== 'ALL') {
+    filteredProds = filteredProds.filter(p => p.Producto === salesFilters.producto);
+  }
 
   // 2. GENDER DONUT CHART
   const ctxGender = document.getElementById('genderSalesChart').getContext('2d');
@@ -543,6 +584,9 @@ function updateSalesProductTable() {
   if (salesFilters.gender !== 'ALL') {
     filteredProds = filteredProds.filter(p => p.Genero === salesFilters.gender);
   }
+  if (salesFilters.producto !== 'ALL') {
+    filteredProds = filteredProds.filter(p => p.Producto === salesFilters.producto);
+  }
 
   const prodLineAgg = {};
   filteredProds.forEach(p => {
@@ -591,32 +635,86 @@ function updateSalesProductTable() {
   });
 }
 
-// Update Catalog View Details
-function updateCatalogView() {
-  if (!rawCatalogStats) return;
+function getFilteredCatalog() {
+  if (!rawCatalogSample) return [];
+  let filtered = rawCatalogSample;
 
-  document.getElementById('catTotalVal').innerText = formatNumber(rawCatalogStats.total_products);
-  
-  const activeCount = rawCatalogStats.active_counts['Yes'] || 0;
-  const activePct = (activeCount / rawCatalogStats.total_products) * 100;
-  document.getElementById('catActiveVal').innerText = formatNumber(activeCount);
-  document.getElementById('catActivePct').innerText = activePct.toFixed(1) + '%';
-
-  const phys = rawCatalogStats.physical_stats;
-  const avgWeight = phys.avg_actual_weight || phys.avg_package_weight || 0.0;
-  document.getElementById('catAvgWeight').innerText = avgWeight.toFixed(2) + ' kg';
-  document.getElementById('catAvgVol').innerText = `Dimensiones: ${(phys.avg_package_length || 0).toFixed(0)}x${(phys.avg_package_width || 0).toFixed(0)}x${(phys.avg_package_height || 0).toFixed(0)} cm`;
-
-  const seo = rawCatalogStats.seo_stats;
-  const seoPct = seo.total > 0 ? (seo.has_meta_desc / seo.total) * 100 : 0.0;
-  document.getElementById('catSeoVal').innerText = seoPct.toFixed(1) + '%';
-
-  updateCatalogCharts();
-  updateCatalogTable();
+  if (catalogFilters.brand !== 'ALL') {
+    filtered = filtered.filter(p => p.Brand === catalogFilters.brand);
+  }
+  if (catalogFilters.dept !== 'ALL') {
+    filtered = filtered.filter(p => p.Department === catalogFilters.dept);
+  }
+  if (catalogFilters.category !== 'ALL') {
+    filtered = filtered.filter(p => p.Category === catalogFilters.category);
+  }
+  if (catalogFilters.active !== 'ALL') {
+    filtered = filtered.filter(p => p.Activeproduct === catalogFilters.active);
+  }
+  if (catalogFilters.search) {
+    const s = catalogFilters.search;
+    filtered = filtered.filter(p => 
+      String(p.ProductID).includes(s) || 
+      String(p.ProductName).toLowerCase().includes(s) || 
+      String(p.Brand).toLowerCase().includes(s) || 
+      String(p.Category).toLowerCase().includes(s)
+    );
+  }
+  return filtered;
 }
 
-function updateCatalogCharts() {
-  if (!rawCatalogStats) return;
+// Update Catalog View Details
+function updateCatalogView() {
+  const filtered = getFilteredCatalog();
+  
+  if (filtered.length === 0) {
+    document.getElementById('catTotalVal').innerText = "0";
+    document.getElementById('catUniqueProds').innerText = "0 Productos Únicos";
+    document.getElementById('catActiveVal').innerText = "0";
+    document.getElementById('catActivePct').innerText = "0%";
+    document.getElementById('catTopCategory').innerText = "N/A";
+    document.getElementById('catTopCategoryPct').innerText = "0%";
+    document.getElementById('catDescVal').innerText = "0%";
+  } else {
+    // Total SKUs
+    document.getElementById('catTotalVal').innerText = formatNumber(filtered.length);
+    
+    // Unique Products
+    const uniqueProds = new Set(filtered.map(p => p.ProductID)).size;
+    document.getElementById('catUniqueProds').innerText = `${formatNumber(uniqueProds)} Productos Únicos`;
+
+    // Active
+    const activeCount = filtered.filter(p => p.Activeproduct === 'Yes').length;
+    const activePct = (activeCount / filtered.length) * 100;
+    document.getElementById('catActiveVal').innerText = formatNumber(activeCount);
+    document.getElementById('catActivePct').innerText = activePct.toFixed(1) + '%';
+
+    // Top Category
+    const catAgg = {};
+    filtered.forEach(p => {
+      const c = p.Category || 'Desconocido';
+      catAgg[c] = (catAgg[c] || 0) + 1;
+    });
+    const sortedCats = Object.entries(catAgg).sort((a, b) => b[1] - a[1]);
+    const topCat = sortedCats.length > 0 ? sortedCats[0][0] : 'N/A';
+    const topCatPct = sortedCats.length > 0 ? (sortedCats[0][1] / filtered.length) * 100 : 0;
+    
+    document.getElementById('catTopCategory').innerText = topCat;
+    document.getElementById('catTopCategory').title = topCat;
+    document.getElementById('catTopCategoryPct').innerText = topCatPct.toFixed(1) + '%';
+
+    // Description Health
+    const validDescCount = filtered.filter(p => p.Description && p.Description.trim() !== '' && p.Description.toLowerCase() !== 'null').length;
+    const descPct = (validDescCount / filtered.length) * 100;
+    document.getElementById('catDescVal').innerText = descPct.toFixed(1) + '%';
+  }
+
+  updateCatalogCharts(filtered);
+  updateCatalogTable(filtered);
+}
+
+function updateCatalogCharts(filtered = null) {
+  if (!filtered) filtered = getFilteredCatalog();
   
   const isLight = document.body.classList.contains('light-theme');
   const textColor = isLight ? '#475569' : '#94a3b8';
@@ -626,7 +724,11 @@ function updateCatalogCharts() {
   const ctxDept = document.getElementById('catDeptChart').getContext('2d');
   if (catDeptChartInstance) catDeptChartInstance.destroy();
   
-  const deptData = rawCatalogStats.dept_counts;
+  const deptData = {};
+  filtered.forEach(p => {
+    const d = p.Department || 'Desconocido';
+    deptData[d] = (deptData[d] || 0) + 1;
+  });
   
   catDeptChartInstance = new Chart(ctxDept, {
     type: 'bar',
@@ -655,7 +757,13 @@ function updateCatalogCharts() {
   const ctxCat = document.getElementById('catCategoryChart').getContext('2d');
   if (catCategoryChartInstance) catCategoryChartInstance.destroy();
   
-  const sortedCats = Object.entries(rawCatalogStats.category_counts)
+  const catData = {};
+  filtered.forEach(p => {
+    const c = p.Category || 'Desconocido';
+    catData[c] = (catData[c] || 0) + 1;
+  });
+
+  const sortedCats = Object.entries(catData)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
   
@@ -682,30 +790,11 @@ function updateCatalogCharts() {
   });
 }
 
-function updateCatalogTable() {
+function updateCatalogTable(filtered = null) {
+  if (!filtered) filtered = getFilteredCatalog();
+
   const tableBody = document.querySelector('#catalogTable tbody');
   tableBody.innerHTML = '';
-
-  let filtered = rawCatalogSample;
-
-  if (catalogFilters.brand !== 'ALL') {
-    filtered = filtered.filter(p => p.Brand === catalogFilters.brand);
-  }
-  if (catalogFilters.dept !== 'ALL') {
-    filtered = filtered.filter(p => p.Department === catalogFilters.dept);
-  }
-  if (catalogFilters.active !== 'ALL') {
-    filtered = filtered.filter(p => p.Activeproduct === catalogFilters.active);
-  }
-  if (catalogFilters.search) {
-    const s = catalogFilters.search;
-    filtered = filtered.filter(p => 
-      String(p.ProductID).includes(s) || 
-      String(p.ProductName).toLowerCase().includes(s) || 
-      String(p.Brand).toLowerCase().includes(s) || 
-      String(p.Category).toLowerCase().includes(s)
-    );
-  }
 
   const totalItems = filtered.length;
   const totalPages = Math.ceil(totalItems / catalogPagination.pageSize);

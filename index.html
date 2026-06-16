@@ -90,6 +90,14 @@
             </select>
           </div>
 
+          <div class="filter-group">
+            <label for="filterProduct"><i data-lucide="shopping-bag"></i> Línea</label>
+            <select id="filterProduct">
+              <option value="ALL">Todas las Líneas</option>
+              <!-- Filled dynamically by script -->
+            </select>
+          </div>
+
           <button class="btn-icon reset-filters" id="resetBtn" title="Resetear Filtros">
             <i data-lucide="rotate-ccw"></i>
           </button>
@@ -107,6 +115,12 @@
             <label for="catFilterDept"><i data-lucide="layers"></i> Depto</label>
             <select id="catFilterDept">
               <option value="ALL">Todos los Deptos</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="catFilterCategory"><i data-lucide="tag"></i> Categoría</label>
+            <select id="catFilterCategory">
+              <option value="ALL">Todas las Categorías</option>
             </select>
           </div>
           <div class="filter-group">
@@ -280,7 +294,7 @@
             </div>
             <div class="kpi-value" id="catTotalVal">0</div>
             <div class="kpi-footer">
-              <span class="kpi-subtext">Registrados en la base de datos maestro</span>
+              <span class="kpi-subtext" id="catUniqueProds">0 Productos Únicos</span>
             </div>
           </div>
 
@@ -298,23 +312,24 @@
 
           <div class="kpi-card">
             <div class="kpi-header">
-              <span class="kpi-title">Complejidad Física</span>
-              <div class="kpi-icon"><i data-lucide="box"></i></div>
+              <span class="kpi-title">Categoría Principal</span>
+              <div class="kpi-icon"><i data-lucide="star"></i></div>
             </div>
-            <div class="kpi-value" id="catAvgWeight">0 kg</div>
+            <div class="kpi-value" id="catTopCategory" style="font-size: 1.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Categoría Principal">N/A</div>
             <div class="kpi-footer">
-              <span class="kpi-subtext" id="catAvgVol">Peso y volumen promedio de empaque</span>
+              <span class="kpi-badge neutral" id="catTopCategoryPct">0%</span>
+              <span class="kpi-subtext">de los SKUs filtrados</span>
             </div>
           </div>
 
           <div class="kpi-card">
             <div class="kpi-header">
-              <span class="kpi-title">Salud SEO y Metadatos</span>
-              <div class="kpi-icon"><i data-lucide="search"></i></div>
+              <span class="kpi-title">Salud de Descripciones</span>
+              <div class="kpi-icon"><i data-lucide="file-text"></i></div>
             </div>
-            <div class="kpi-value" id="catSeoVal">0%</div>
+            <div class="kpi-value" id="catDescVal">0%</div>
             <div class="kpi-footer">
-              <span class="kpi-subtext">Productos con meta description</span>
+              <span class="kpi-subtext">SKUs con descripción válida</span>
             </div>
           </div>
         </div>
